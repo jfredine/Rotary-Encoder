@@ -35,14 +35,13 @@ const int num_edges_per_revolution = 2 * num_detents_per_revolution;
 // current position of the encoder
 volatile int pos;
 
-
 /*
  * TIMER0_COMPA_vect
  * ISR triggered by timer0 where inputs are read and debounced.
- * In order to get interrupts at a rate greater than 1 ms (defaultfor timer0),
- * but not require an additional timer and not disturbe the system timer, it
- * makes use of the timer compare interrupt and adjusts the comparison value
- * within the ISR.
+ * In order to get interrupts at a rate greater than 1 ms (default for timer0),
+ * but not require an additional timer and not disturb the timer0 overflow rate
+ * (because that is used by default libraries), it makes use of the timer
+ * compare interrupt and adjusts the comparison value within the ISR.
  */
 
 ISR(TIMER0_COMPA_vect) {
@@ -52,11 +51,8 @@ ISR(TIMER0_COMPA_vect) {
 
     static int initial_b;
 
+    // set the time of the next interrupt
     OCR0A = (OCR0A + OCR0A_INCR) & 0xff;
-
-    // Check the value of button B when a rising edge on button A is found.
-    // A rising edge on A when B is low indicates clockwise motion while a
-    // rising edge on A when B is high indicates counter-clockwise motion
 
     // get value of B the first time we detect a change on A
     // we assume B is stable by the time A begins to change
@@ -76,6 +72,10 @@ ISR(TIMER0_COMPA_vect) {
     }
 
     // if values are stable, adjust rotary encoder position
+    // B low on rising edge of A indicates clockwise motion while a
+    // B high on rising edge of A indicates counter-clockwise motion.
+    // B low on falling edge on A indicates counter clockwise motion
+    // B high on falling edge of A indicates clockwise motion
     if (curr_a_stable_count == debounce_stable_count) {
         if (last_a != curr_a) {
             if (curr_a == initial_b) {
