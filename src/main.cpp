@@ -19,8 +19,8 @@ const int num_detents_per_revolution = 20;
 // number of samples with constant signal value to be considered "debounced"
 const int debounce_stable_count = 4;
 
-// time between interrupts for monitoring signal value
-// resolution of the timer is 4us so beset to make this a multiple of 4
+// time between interrupts for monitoring signal values
+// resolution of the timer is 4us so make this >= 4 and a multiple of 4
 #define ISR_INTERVAL_us 256
 
 //******************************************************************************
@@ -72,9 +72,9 @@ ISR(TIMER0_COMPA_vect) {
     }
 
     // if values are stable, adjust rotary encoder position
-    // B low on rising edge of A indicates clockwise motion while a
-    // B high on rising edge of A indicates counter-clockwise motion.
-    // B low on falling edge on A indicates counter clockwise motion
+    // B low on rising edge of A indicates clockwise motion while
+    // B high on rising edge of A indicates counter clockwise motion.
+    // B low on falling edge on A indicates counter clockwise motion while
     // B high on falling edge of A indicates clockwise motion
     if (curr_a_stable_count == debounce_stable_count) {
         if (last_a != curr_a) {
@@ -89,10 +89,9 @@ ISR(TIMER0_COMPA_vect) {
                     pos -= num_edges_per_revolution;
                 }
             }
-
-            last_a = curr_a;
         }
 
+        last_a = curr_a;
         curr_a_stable_count = 0;
     }
 }
@@ -109,7 +108,7 @@ void setup() {
     cli();  // disable interrupts
 
     // Turn off PWM modes of timer0 because such modes prevent the
-    // immediate re-assignment of compare values
+    // immediate re-assignment of compare values to OCR0A
     TCCR0A &= ~((1 << WGM01) | (1 << WGM00));
     TCCR0B &= ~(1 << WGM02);
 
